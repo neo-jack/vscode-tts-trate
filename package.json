@@ -1,0 +1,46 @@
+{
+  "name": "vscode-tts-sidebar",
+  "displayName": "TTS Sidebar Assistant",
+  "description": "A simple sidebar text-to-speech assistant.",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onView:vscode-tts-sidebar-view"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "tts-sidebar-container",
+          "title": "TTS Assistant",
+          "icon": "$(megaphone)"
+        }
+      ]
+    },
+    "views": {
+      "tts-sidebar-container": [
+        {
+          "id": "vscode-tts-sidebar-view",
+          "name": "Text to Speech",
+          "type": "webview"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.80.0",
+    "@types/node": "^16.x",
+    "typescript": "^4.9.0"
+  }
+}

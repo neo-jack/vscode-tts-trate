@@ -31,7 +31,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 			<html lang="en">
 			<head>
 				<meta charset="UTF-8">
-				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'nonce-${nonce}';">
+				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'nonce-${nonce}'; connect-src https://api.mymemory.translated.net;">
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
 				<style>
 					body {
@@ -96,6 +96,37 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                         padding: 10px;
                         border: 1px solid red;
                     }
+                    .btn-group {
+                        display: flex;
+                        gap: 10px;
+                    }
+                    .btn-group button {
+                        flex: 1;
+                    }
+                    #translate-btn {
+                        background: var(--vscode-button-secondaryBackground, #5a5a5a);
+                        color: var(--vscode-button-secondaryForeground, #fff);
+                    }
+                    #translate-btn:hover {
+                        background: var(--vscode-button-secondaryHoverBackground, #4a4a4a);
+                    }
+                    #translation-output {
+                        width: 100%;
+                        min-height: 80px;
+                        background: var(--vscode-input-background, #fff);
+                        color: var(--vscode-input-foreground, #000);
+                        border: 1px solid var(--vscode-input-border, #ccc);
+                        padding: 8px;
+                        box-sizing: border-box;
+                        font-family: inherit;
+                        white-space: pre-wrap;
+                        word-wrap: break-word;
+                    }
+                    .translation-label {
+                        font-size: 12px;
+                        color: var(--vscode-descriptionForeground, #666);
+                        margin-top: 5px;
+                    }
 				</style>
 			</head>
 			<body>
@@ -109,9 +140,17 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                     </select>
                 </div>
 
-                <button id="speak-btn">
-                    <span>🔊</span> Speak
-                </button>
+                <div class="btn-group">
+                    <button id="speak-btn">
+                        <span>🔊</span> Speak
+                    </button>
+                    <button id="translate-btn">
+                        <span>🌐</span> Translate
+                    </button>
+                </div>
+
+                <div class="translation-label">Translation (Chinese):</div>
+                <div id="translation-output"></div>
 
                 <script nonce="${nonce}">
                     try {
@@ -127,6 +166,8 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                         const speakBtn = document.getElementById('speak-btn');
                         const voiceSelect = document.getElementById('voice-select');
                         const errorContainer = document.getElementById('error-container');
+                        const translateBtn = document.getElementById('translate-btn');
+                        const translationOutput = document.getElementById('translation-output');
 
                         function showError(msg) {
                             if (errorContainer) {
@@ -147,7 +188,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                                     return +1;
                                 });
                                  
-                                voiceSelect.innerHTML = '<option value="">Default Voice</option>';
+                                voiceSelect.innerHTML = '';
                                  
                                 // If voices are empty, try again shortly (sometimes async)
                                 if (voices.length === 0) {
@@ -164,6 +205,10 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                                         option.setAttribute('data-name', voices[i].name);
                                         voiceSelect.appendChild(option);
                                     }
+                                }
+                                // 自动选择第一个英语语音
+                                if (voiceSelect.options.length > 0) {
+                                    voiceSelect.selectedIndex = 0;
                                 }
                             } catch (e) {
                                 console.error('Error populating voices:', e);
@@ -184,6 +229,32 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                                 e.stopPropagation();
                                 speakBtn.click();
                                 return false;
+                            }
+                        });
+
+                        // 翻译功能
+                        async function translateText(text) {
+                            try {
+                                translationOutput.textContent = 'Translating...';
+                                const response = await fetch(
+                                    'https://api.mymemory.translated.net/get?q=' + encodeURIComponent(text) + '&langpair=en|zh-CN'
+                                );
+                                const data = await response.json();
+                                if (data.responseStatus === 200) {
+                                    translationOutput.textContent = data.responseData.translatedText;
+                                } else {
+                                    translationOutput.textContent = 'Translation failed: ' + (data.responseDetails || 'Unknown error');
+                                }
+                            } catch (e) {
+                                console.error('Translation error:', e);
+                                translationOutput.textContent = 'Translation error: ' + e.message;
+                            }
+                        }
+
+                        translateBtn.addEventListener('click', () => {
+                            const text = textInput.value.trim();
+                            if (text) {
+                                translateText(text);
                             }
                         });
 

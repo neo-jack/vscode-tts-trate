@@ -25,7 +25,8 @@
       "editor/context": [
         {
           "command": "vscode-tts-sidebar.speakSelection",
-          "when": "editorHasSelection"
+          "when": "editorHasSelection",
+          "group": "navigation@5"
         }
       ]
     },

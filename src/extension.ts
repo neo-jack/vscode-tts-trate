@@ -43,8 +43,7 @@ export function activate(context: vscode.ExtensionContext) {
     ),
   );
 
-  // Optional: Show a message to confirm it loaded (can be removed later)
-  // vscode.window.showInformationMessage('TTS Sidebar Loaded');
+
 }
 
 export function deactivate() {}

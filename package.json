@@ -10,10 +10,25 @@
     "Other"
   ],
   "activationEvents": [
-    "onView:vscode-tts-sidebar-view"
+    "onView:vscode-tts-sidebar-view",
+    "onCommand:vscode-tts-sidebar.speakSelection"
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "commands": [
+      {
+        "command": "vscode-tts-sidebar.speakSelection",
+        "title": "Speak Selection (English)"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "vscode-tts-sidebar.speakSelection",
+          "when": "editorHasSelection"
+        }
+      ]
+    },
     "viewsContainers": {
       "activitybar": [
         {
